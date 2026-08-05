@@ -3,6 +3,7 @@
 namespace DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider;
 
 use DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider\Enums\SliderSpecification;
+use Fabricate\Contracts\Actuation\Interfaces\LEDStrip;
 use Fabricate\Contracts\Actuation\Interfaces\Potentiometer;
 use Fabricate\Contracts\Circuits\Attributes\IntegratedCircuit;
 use Fabricate\Contracts\NutsAndBolts\BootSequence;
@@ -10,7 +11,7 @@ use GeneralPurposeIO\I2C\I2C;
 use GeneralPurposeIO\I2C\I2CSlave;
 
 #[IntegratedCircuit('I2C')]
-class SeesawNeoSlider implements Potentiometer, BootSequence
+class SeesawNeoSlider implements Potentiometer, LEDStrip, BootSequence
 {
     /** @var list<array{red: int, green: int, blue: int}> */
     protected array $pixels = [];
@@ -82,19 +83,35 @@ class SeesawNeoSlider implements Potentiometer, BootSequence
         int $color_or_red,
         ?int $green = null,
         ?int $blue = null,
+        ?int $white = null,
     ): static {
         if ($pixel < 0 || $pixel >= $this->pixelCount()) {
             throw SeesawNeoSliderException::invalidPixel($pixel, $this->pixelCount());
         }
 
-        $this->pixels[$pixel] = $this->color($color_or_red, $green, $blue);
+        $this->pixels[$pixel] = $this->color($color_or_red, $green, $blue, $white);
 
         return $this;
     }
 
-    public function fill(int $color_or_red, ?int $green = null, ?int $blue = null): static
+    public function getPixelColor(int $pixel): int
     {
-        $color = $this->color($color_or_red, $green, $blue);
+        if ($pixel < 0 || $pixel >= $this->pixelCount()) {
+            throw SeesawNeoSliderException::invalidPixel($pixel, $this->pixelCount());
+        }
+
+        $color = $this->pixels[$pixel];
+
+        return ($color['red'] << 16) | ($color['green'] << 8) | $color['blue'];
+    }
+
+    public function fill(
+        int $color_or_red,
+        ?int $green = null,
+        ?int $blue = null,
+        ?int $white = null,
+    ): static {
+        $color = $this->color($color_or_red, $green, $blue, $white);
         $this->pixels = array_fill(0, $this->pixelCount(), $color);
 
         return $this;
@@ -127,6 +144,11 @@ class SeesawNeoSlider implements Potentiometer, BootSequence
     public function pixelCount(): int
     {
         return SliderSpecification::PIXEL_COUNT->value;
+    }
+
+    public function length(): int
+    {
+        return $this->pixelCount();
     }
 
     public function close(): void
@@ -164,8 +186,16 @@ class SeesawNeoSlider implements Potentiometer, BootSequence
     /**
      * @return array{red: int, green: int, blue: int}
      */
-    protected function color(int $color_or_red, ?int $green, ?int $blue): array
-    {
+    protected function color(
+        int $color_or_red,
+        ?int $green,
+        ?int $blue,
+        ?int $white,
+    ): array {
+        if (! is_null($white)) {
+            throw SeesawNeoSliderException::unsupportedWhiteChannel();
+        }
+
         if (is_null($green) && is_null($blue)) {
             if ($color_or_red < 0 || $color_or_red > 0xFFFFFF) {
                 throw SeesawNeoSliderException::invalidColorChannel($color_or_red);

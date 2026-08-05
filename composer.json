@@ -2,7 +2,7 @@
     "name": "dept-of-scrapyard-robotics/seesaw-neo-slider",
     "description": "Drive the Adafruit NeoSlider I2C QT Slide Potentiometer over I2C with PHP",
     "type": "library",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "license": "MIT",
     "homepage": "https://dosr.projectsaturnstudios.com",
     "authors": [
@@ -20,7 +20,8 @@
         "gpio/i2c": "^0.6.0"
     },
     "require-dev": {
-        "pestphp/pest": "^4"
+        "pestphp/pest": "^4",
+        "scrapyard-io/waveforms": "^0.6.0"
     },
     "autoload": {
         "psr-4": {

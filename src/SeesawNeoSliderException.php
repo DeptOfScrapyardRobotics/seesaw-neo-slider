@@ -31,6 +31,11 @@ class SeesawNeoSliderException extends RuntimeException
         return new static('Provide either one packed 0xRRGGBB color or separate red, green, and blue values.');
     }
 
+    public static function unsupportedWhiteChannel(): static
+    {
+        return new static('The seesaw NeoSlider contains RGB NeoPixels and does not support a white channel.');
+    }
+
     public static function invalidColorChannel(int $value): static
     {
         return new static("NeoPixel color channel {$value} is outside the range 0-255.");

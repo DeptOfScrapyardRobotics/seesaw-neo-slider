@@ -2,8 +2,10 @@
 
 use DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider\SeesawNeoSlider;
 use DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider\SeesawNeoSliderException;
+use Fabricate\Contracts\Actuation\Interfaces\LEDStrip;
 use GeneralPurposeIO\I2C\Drivers\I2CDriver;
 use GeneralPurposeIO\I2C\I2CSlave;
+use ScrapyardIO\Waveforms\Light\NeoPixel;
 
 final class FakeNeoSliderI2CDriver extends I2CDriver
 {
@@ -108,7 +110,30 @@ it('accepts packed and separate RGB colors and writes one GRB pixel buffer', fun
     expect($driver->writes)->toBe([
         [0x0E, 0x04, 0x00, 0x00, 0x22, 0x11, 0x33, 0x55, 0x44, 0x66, 0, 0, 0, 0, 0, 0],
         [0x0E, 0x05],
-    ]);
+    ])->and($slider->getPixelColor(0))->toBe(0x112233)
+        ->and($slider->getPixelColor(1))->toBe(0x445566);
+});
+
+it('implements LEDStrip and can back a Waveforms NeoPixel actuator', function (): void {
+    [$slider] = neoSliderFixture();
+    $pixels = new NeoPixel($slider);
+
+    $pixels->setPixelColor(2, 0xABCDEF)->brightness(0.25);
+
+    expect($slider)->toBeInstanceOf(LEDStrip::class)
+        ->and($slider->length())->toBe(4)
+        ->and($pixels->pixelCount())->toBe(4)
+        ->and($pixels->getPixelColor(2))->toBe(0xABCDEF);
+});
+
+it('rejects the unsupported RGBW white channel', function (): void {
+    [$slider] = neoSliderFixture();
+
+    expect(fn () => $slider->setPixelColor(0, 1, 2, 3, 4))
+        ->toThrow(
+            SeesawNeoSliderException::class,
+            'The seesaw NeoSlider contains RGB NeoPixels and does not support a white channel.',
+        );
 });
 
 it('applies brightness without losing the source colors and can clear the strip', function (): void {

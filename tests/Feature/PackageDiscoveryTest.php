@@ -1,13 +1,16 @@
 <?php
 
+use DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider\NeopixelSlider;
 use DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider\Providers\SeesawNeoSliderServiceProvider;
 use DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider\SeesawClient;
 use DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider\SeesawNeoSlider;
+use Fabricate\Actuation\Actuator;
+use Fabricate\Contracts\Actuation\Interfaces\LEDStrip;
 use Fabricate\Contracts\Actuation\Interfaces\Potentiometer;
 use Fabricate\Contracts\Circuits\Attributes\IntegratedCircuit;
 use Fabricate\Contracts\NutsAndBolts\BootSequence;
 
-it('advertises v0.6 provider discovery and registers the circuit slug', function (): void {
+it('advertises v0.6 provider discovery and registers circuit and actuator slugs', function (): void {
     $composer = json_decode(file_get_contents(dirname(__DIR__, 2).'/composer.json'), true, flags: JSON_THROW_ON_ERROR);
     $provider = file_get_contents(dirname(__DIR__, 2).'/src/Providers/SeesawNeoSliderServiceProvider.php');
 
@@ -18,14 +21,17 @@ it('advertises v0.6 provider discovery and registers the circuit slug', function
         ->and($composer['extra']['scrapyard-io']['providers'])->toContain(
             SeesawNeoSliderServiceProvider::class,
         )
-        ->and($provider)->toContain("Circuit::addCircuit('seesaw-neo-slider'");
+        ->and($provider)->toContain("Circuit::addCircuit('seesaw-neo-slider'")
+        ->and($provider)->toContain("Actuator::addActuator('neopixel-slider'")
+        ->and(is_subclass_of(NeopixelSlider::class, Actuator::class))->toBeTrue();
 });
 
-it('is an I2C-only bootable Fabricate potentiometer with a local seesaw client', function (): void {
+it('is an I2C-only bootable potentiometer and LED strip with a local seesaw client', function (): void {
     $reflection = new ReflectionClass(SeesawNeoSlider::class);
     $attributes = $reflection->getAttributes(IntegratedCircuit::class);
 
     expect(is_subclass_of(SeesawNeoSlider::class, Potentiometer::class))->toBeTrue()
+        ->and(is_subclass_of(SeesawNeoSlider::class, LEDStrip::class))->toBeTrue()
         ->and(is_subclass_of(SeesawNeoSlider::class, BootSequence::class))->toBeTrue()
         ->and($attributes)->toHaveCount(1)
         ->and($attributes[0]->getArguments())->toBe(['I2C'])
