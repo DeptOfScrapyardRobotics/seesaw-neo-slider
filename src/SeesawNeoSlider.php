@@ -3,15 +3,18 @@
 namespace DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider;
 
 use DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider\Enums\SliderSpecification;
-use Fabricate\Contracts\Actuation\Interfaces\LEDStrip;
-use Fabricate\Contracts\Actuation\Interfaces\Potentiometer;
-use Fabricate\Contracts\Circuits\Attributes\IntegratedCircuit;
-use Fabricate\Contracts\NutsAndBolts\BootSequence;
+use GeneralPurposeIO\Circuits\Types\Actuator;
+use GeneralPurposeIO\Contracts\Circuits\Attributes\IntegratedCircuit;
+use GeneralPurposeIO\Contracts\Circuits\Attributes\Pinout;
+use GeneralPurposeIO\Contracts\Circuits\BootSequence;
 use GeneralPurposeIO\I2C\I2C;
 use GeneralPurposeIO\I2C\I2CSlave;
+use Waveforms\Contracts\Actuation\Interfaces\LEDStrip;
+use Waveforms\Contracts\Actuation\Interfaces\Potentiometer;
 
 #[IntegratedCircuit('I2C')]
-class SeesawNeoSlider implements Potentiometer, LEDStrip, BootSequence
+#[Pinout(['I2C' => ['driver', 'device', 'slave']])]
+class SeesawNeoSlider extends Actuator implements Potentiometer, LEDStrip, BootSequence
 {
     /** @var list<array{red: int, green: int, blue: int}> */
     protected array $pixels = [];

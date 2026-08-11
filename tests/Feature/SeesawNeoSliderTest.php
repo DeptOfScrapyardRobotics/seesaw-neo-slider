@@ -2,10 +2,10 @@
 
 use DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider\SeesawNeoSlider;
 use DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider\SeesawNeoSliderException;
-use Fabricate\Contracts\Actuation\Interfaces\LEDStrip;
 use GeneralPurposeIO\I2C\Drivers\I2CDriver;
 use GeneralPurposeIO\I2C\I2CSlave;
-use ScrapyardIO\Waveforms\Light\NeoPixel;
+use Waveforms\Contracts\Actuation\Interfaces\LEDStrip;
+use Waveforms\LEDs\NeoPixel;
 
 final class FakeNeoSliderI2CDriver extends I2CDriver
 {

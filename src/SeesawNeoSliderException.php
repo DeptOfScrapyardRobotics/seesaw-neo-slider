@@ -2,9 +2,9 @@
 
 namespace DeptOfScrapyardRobotics\Actuators\SeesawNeoSlider;
 
-use RuntimeException;
+use Waveforms\Contracts\Actuation\ActuatorException;
 
-class SeesawNeoSliderException extends RuntimeException
+class SeesawNeoSliderException extends ActuatorException
 {
     public static function i2cReadFailed(int $expected_bytes): static
     {
